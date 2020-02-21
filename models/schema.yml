@@ -1,4 +1,27 @@
 version: 2
+
+sources: 
+  - name: stripe
+    database: raw
+    loaded_at_field: current_timestamp
+    loader: Claire
+
+    freshness:
+      warn_after: 
+        count: 1
+        period: hour
+      error_after: {count: 24, period: hour}
+
+    tables:
+      - name: payment
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+      - name: payment_methods
+        loaded_at_field: created_timestamp
+
 models:
   - name: customers
     description: One record per customer
@@ -30,3 +53,8 @@ models:
         tests:
           - accepted_values:
               values: ['placed', 'shipped', 'completed', 'return_pending', 'returned']
+  - name: fct_orders
+    description: This model joins the orders data with payment data from Stripe
+    columns:
+      - name: order_id
+        description: Primary key
